@@ -24,60 +24,87 @@ distance(p1,p2) {
     return Sqrt(dx**2 + dy**2)
 }
 
+
+
+findMotion(movement)  {
+    x := movement[1]
+    y := movement[2]
+    if (Abs(y) <= 100) {
+        if isPositive(x) {
+            return "R"
+        } else {
+            return "L"
+        }
+    } else If (Abs(x) <= 100) {
+        if isPositive(-y) { ; Up is -ve coords for some reason
+            return "U"
+        } else {
+            return "D"
+        }
+    } else if (Abs(Abs(x) - Abs(y)) <= 200){
+        if isPositive(x) {
+            if isPositive(-y) {
+                return "1"
+            } else {
+                return "2"
+            }
+        } else {
+            if isPositive(-y) {
+                return "4"
+            } else {
+                return "3"
+            }
+        }
+    } else {
+        return "?"
+    }
+
+}
+
+global keyLButton := false
+LButton:: {
+    global keyLButton := true
+    KeyWait("LButton")
+}
+Hotkey("LButton","Off")
+
 CapsLock::{
-    positions := []
     KeyWait("CapsLock")
+    global keyLButton
+    positions := []
+    
     SetCapsLockState("AlwaysOff")
     Hotkey("CapsLock","Off")
-    while !GetKeyState("CapsLock","P") {
-        if GetKeyState("LButton") {
+    Hotkey("LButton","On") ; Allow hotkey to change keyLButton variable
+    
+    while !GetKeyState("CapsLock","P") { ; Until CapsLock is pressed again
+        if keyLButton { 
             MouseGetPos(&x,&y)
             positions.Push([x,y])
-            KeyWait("LButton")
+            keyLButton := false
         }
     }
-    
-    if positions.Length > 0 {
+
+    Hotkey("LButton","Off") ; Allow mouse to be used again
+
+    if positions.Length > 1 { ; Skip if less than 2 clicks
+        
         i := 1
         differences := []
+        
         while i < positions.Length {
             differences.Push(difference(positions[i],positions[i+1]))
             i += 1
         }
+        
         motions := ""
         for movement in differences {
-            x := movement[1]
-            y := movement[2]
-            if (Abs(y) <= 20) {
-                if isPositive(x) {
-                    motions := motions "R"
-                } else {
-                    motions := motions "L"
-                }
-            } else If (Abs(x) <= 20) {
-                if isPositive(-y) { ; Up is -ve coords for some reason
-                    motions := motions "U"
-                } else {
-                    motions := motions "D"
-                }
-            } else if (Abs(Abs(x) - Abs(y)) <= 50){
-                if isPositive(x) {
-                    if isPositive(-y) {
-                        motions := motions "1"
-                    } else {
-                        motions := motions "2"
-                    }
-                } else {
-                    if isPositive(-y) {
-                        motions := motions "4"
-                    } else {
-                        motions := motions "3"
-                    }
-                }
-            }
+            motions := motions findMotion(movement)
         }
+
         MsgBox(motions)
     }
+
     SetCapsLockState("Off")
     Hotkey("CapsLock","On")
 }
