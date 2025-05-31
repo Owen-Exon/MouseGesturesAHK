@@ -1,6 +1,8 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
+pi := 4 * atan(1)
+
 WaitAndReturnInput(Keys:="{All}",Exept:="{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShift}{LWin}{RWin}") {
     ih := InputHook()
     ih.KeyOpt(Keys,"ES")
@@ -24,41 +26,30 @@ distance(p1,p2) {
     return Sqrt(dx**2 + dy**2)
 }
 
+angle(p) {
+    Return (DllCall('msvcrt.dll\atan2', 'Double', p[2], 'Double', p[1], 'Cdecl Double')/pi)*-180
+}
 
 
 findMotion(movement)  {
-    x := movement[1]
-    y := movement[2]
-    if (Abs(y) <= 100) {
-        if isPositive(x) {
-            return "R"
-        } else {
-            return "L"
-        }
-    } else If (Abs(x) <= 100) {
-        if isPositive(-y) { ; Up is -ve coords for some reason
-            return "U"
-        } else {
-            return "D"
-        }
-    } else if (Abs(Abs(x) - Abs(y)) <= 200){
-        if isPositive(x) {
-            if isPositive(-y) {
-                return "1"
-            } else {
-                return "2"
-            }
-        } else {
-            if isPositive(-y) {
-                return "4"
-            } else {
-                return "3"
-            }
-        }
-    } else {
-        return "?"
+    movementAngle := angle(movement)
+    if -22.5 < movementAngle and movementAngle < 22.5 {
+        return "R"
+    } else If 22.5 < movementAngle and movementAngle < 67.5 {
+        return "1"
+    } else If 67.5 < movementAngle and movementAngle < 112.5 {
+        return "U"
+    } else If 112.5 < movementAngle and movementAngle < 157.5{
+        return "2"
+    } else If (157.5 < movementAngle and movementAngle < 180) OR (-180 < movementAngle and movementAngle < -157.5) {
+        return "L"
+    } else If -157.5 < movementAngle and movementAngle < -112.5 {
+        return "3"
+    } else If -112.5 < movementAngle and movementAngle < -67.5 {
+        return "D"
+    } else If -67.5 < movementAngle and movementAngle < -22.5 {
+        return "4"
     }
-
 }
 
 global keyLButton := false
