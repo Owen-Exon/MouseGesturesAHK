@@ -3,6 +3,11 @@
 
 pi := 4 * atan(1)
 
+commands := [
+    ; ['commandKey eg. UR12' , 'command1() `n command2()']
+    ['UDRL1324','MsgBox("Command `'UDRL13241`' Sent")']
+]
+
 WaitAndReturnInput(Keys:="{All}",Exept:="{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShift}{LWin}{RWin}") {
     ih := InputHook()
     ih.KeyOpt(Keys,"ES")
@@ -10,7 +15,7 @@ WaitAndReturnInput(Keys:="{All}",Exept:="{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShi
     ih.Start()
     ih.Wait()
     return ih.EndMods . ih.EndKey
-}
+}   
 isPositive(x) {
     return (x = Abs(x))
 }
@@ -61,11 +66,11 @@ Hotkey("LButton","Off")
 
 CapsLock::{
     KeyWait("CapsLock")
+    SetCapsLockState("AlwaysOff")
+    Hotkey("CapsLock","Off")
     global keyLButton
     positions := []
     
-    SetCapsLockState("AlwaysOff")
-    Hotkey("CapsLock","Off")
     Hotkey("LButton","On") ; Allow hotkey to change keyLButton variable
     
     while !GetKeyState("CapsLock","P") { ; Until CapsLock is pressed again
@@ -77,7 +82,7 @@ CapsLock::{
     }
 
     Hotkey("LButton","Off") ; Allow mouse to be used again
-
+    
     if positions.Length > 1 { ; Skip if less than 2 clicks
         
         i := 1
@@ -92,12 +97,25 @@ CapsLock::{
         for movement in differences {
             motions := motions findMotion(movement)
         }
-
-        MsgBox(motions)
+        
+        sendCommand(motions)
     }
-
-    SetCapsLockState("Off")
     Hotkey("CapsLock","On")
+}
+
+sendCommand(motions) {
+    for command in commands {
+        key := command[1]
+        actions := command[2]
+        if motions == key {
+            tempFile := A_Temp "\dynamic_script.ahk"
+            try FileDelete(tempFile)
+            FileAppend(actions,tempFile)
+            Run('AutoHotkey.exe "' tempFile '"')
+            return "Success"
+        }
+    }
+    return "No Command Found"
 }
 
 Esc::{
