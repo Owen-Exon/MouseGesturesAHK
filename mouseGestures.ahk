@@ -5,7 +5,10 @@ pi := 4 * atan(1)
 
 commands := [
     ; ['commandKey eg. UR12' , 'command1() `n command2()']
-    ['UDRL1324','MsgBox("Command `'UDRL13241`' Sent")']
+    ['UDRL1324','MsgBox("Command `'UDRL13241`' Sent")'],
+    ['R2','SendInput("{Media_Next}")'],
+    ['L4','SendInput("{Media_Prev}")'],
+    ['DUD','SendInput("{Media_Play_Pause}")']
 ]
 
 WaitAndReturnInput(Keys:="{All}",Exept:="{LCtrl}{RCtrl}{LAlt}{RAlt}{LShift}{RShift}{LWin}{RWin}") {
@@ -79,6 +82,10 @@ CapsLock::{
             positions.Push([x,y])
             keyLButton := false
         }
+        if GetKeyState("Escape") {
+            positions := []
+            break
+        }
     }
 
     Hotkey("LButton","Off") ; Allow mouse to be used again
@@ -116,8 +123,4 @@ sendCommand(motions) {
         }
     }
     return "No Command Found"
-}
-
-Esc::{
-    ExitApp()
 }
